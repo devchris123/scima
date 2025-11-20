@@ -32,6 +32,7 @@ Create paired files for each version:
 
 ## Future roadmap
 ### Near-term enhancements
+- Dialect-specific migrations: for portability you can keep separate directories (e.g. `migrations_pg/`) when syntax differs (Postgres vs HANA column add syntax). The CLI currently points to one directory; run with `--migrations-dir` per dialect.
 1. HTTP API wrapper: expose endpoints `/status`, `/up`, `/down` allowing remote orchestration; use the same internal migrator package.
 2. Multi-tenancy: strategy options
 	- Separate schemas/databases per tenant (pass tenant DSN). Maintain a migration state table per tenant.
