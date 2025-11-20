@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	_ "github.com/lib/pq" // postgres driver
 	"github.com/scima/scima/internal/config"
 	"github.com/scima/scima/internal/dialect"
 	"github.com/scima/scima/internal/migrate"
@@ -153,6 +154,8 @@ func driverNameFor(driver string) string {
 	switch driver {
 	case "hana":
 		return "hdb"
+	case "postgres", "pg":
+		return "postgres"
 	default:
 		return driver // assume same
 	}

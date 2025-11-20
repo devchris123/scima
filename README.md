@@ -16,6 +16,11 @@ Schema migrations tool (Go) targeting multi-database support starting with SAP H
 scima init --driver hana --dsn "hdb://user:pass@host:30015" --migrations-dir ./migrations
 scima up --driver hana --dsn "hdb://user:pass@host:30015" --migrations-dir ./migrations
 scima status --driver hana --dsn "hdb://user:pass@host:30015" --migrations-dir ./migrations
+
+# Postgres example
+scima init --driver postgres --dsn "postgres://user:pass@localhost:5432/mydb?sslmode=disable" --migrations-dir ./migrations
+scima up --driver postgres --dsn "postgres://user:pass@localhost:5432/mydb?sslmode=disable" --migrations-dir ./migrations
+scima status --driver postgres --dsn "postgres://user:pass@localhost:5432/mydb?sslmode=disable" --migrations-dir ./migrations
 ```
 
 ## Migration files
