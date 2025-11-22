@@ -37,7 +37,7 @@ func init() {
 	downCmd.Flags().IntVar(&steps, "steps", 1, "Number of migration steps to revert (default 1, 0=all)")
 }
 
-var initCmd = &cobra.Command{Use: "init", Short: "Initialize migration tracking table", RunE: func(cmd *cobra.Command, args []string) error {
+var initCmd = &cobra.Command{Use: "init", Short: "Initialize migration tracking table", RunE: func(_ *cobra.Command, _ []string) error {
 	cfg := gatherConfig()
 	migr, db, err := buildMigrator(cfg)
 	if err != nil {
@@ -55,7 +55,7 @@ var initCmd = &cobra.Command{Use: "init", Short: "Initialize migration tracking 
 	return nil
 }}
 
-var statusCmd = &cobra.Command{Use: "status", Short: "Show current and pending migrations", RunE: func(cmd *cobra.Command, args []string) error {
+var statusCmd = &cobra.Command{Use: "status", Short: "Show current and pending migrations", RunE: func(_ *cobra.Command, _ []string) error {
 	cfg := gatherConfig()
 	migr, db, err := buildMigrator(cfg)
 	if err != nil {
@@ -81,7 +81,7 @@ var statusCmd = &cobra.Command{Use: "status", Short: "Show current and pending m
 	return nil
 }}
 
-var upCmd = &cobra.Command{Use: "up", Short: "Apply pending up migrations", RunE: func(cmd *cobra.Command, args []string) error {
+var upCmd = &cobra.Command{Use: "up", Short: "Apply pending up migrations", RunE: func(_ *cobra.Command, _ []string) error {
 	cfg := gatherConfig()
 	migr, db, err := buildMigrator(cfg)
 	if err != nil {
@@ -113,7 +113,7 @@ var upCmd = &cobra.Command{Use: "up", Short: "Apply pending up migrations", RunE
 }}
 
 var steps int
-var downCmd = &cobra.Command{Use: "down", Short: "Revert migrations (default 1 step)", RunE: func(cmd *cobra.Command, args []string) error {
+var downCmd = &cobra.Command{Use: "down", Short: "Revert migrations (default 1 step)", RunE: func(_ *cobra.Command, _ []string) error {
 	cfg := gatherConfig()
 	migr, db, err := buildMigrator(cfg)
 	if err != nil {

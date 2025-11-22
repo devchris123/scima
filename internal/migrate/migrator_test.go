@@ -13,12 +13,12 @@ type mockConn struct {
 	Versions map[int64]bool
 }
 
-func (m *mockConn) ExecContext(ctx context.Context, query string, args ...any) (dialect.Result, error) {
+func (m *mockConn) ExecContext(_ context.Context, query string, _ ...any) (dialect.Result, error) {
 	m.Execs = append(m.Execs, query)
 	return mockResult{}, nil
 }
 
-func (m *mockConn) QueryContext(ctx context.Context, query string, args ...any) (dialect.Rows, error) {
+func (m *mockConn) QueryContext(_ context.Context, query string, _ ...any) (dialect.Rows, error) {
 	m.Queries = append(m.Queries, query)
 	return mockRows{versions: m.Versions}, nil
 }
@@ -61,16 +61,16 @@ func (r mockRows) Err() error   { return nil }
 
 type mockDialect struct{ versions map[int64]bool }
 
-func (d mockDialect) Name() string                                                   { return "mock" }
-func (d mockDialect) EnsureMigrationTable(ctx context.Context, c dialect.Conn) error { return nil }
-func (d mockDialect) SelectAppliedVersions(ctx context.Context, c dialect.Conn) (map[int64]bool, error) {
+func (d mockDialect) Name() string                                                 { return "mock" }
+func (d mockDialect) EnsureMigrationTable(_ context.Context, _ dialect.Conn) error { return nil }
+func (d mockDialect) SelectAppliedVersions(_ context.Context, _ dialect.Conn) (map[int64]bool, error) {
 	return d.versions, nil
 }
-func (d mockDialect) InsertVersion(ctx context.Context, c dialect.Conn, version int64) error {
+func (d mockDialect) InsertVersion(_ context.Context, _ dialect.Conn, version int64) error {
 	d.versions[version] = true
 	return nil
 }
-func (d mockDialect) DeleteVersion(ctx context.Context, c dialect.Conn, version int64) error {
+func (d mockDialect) DeleteVersion(_ context.Context, _ dialect.Conn, version int64) error {
 	delete(d.versions, version)
 	return nil
 }
