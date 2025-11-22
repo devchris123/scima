@@ -1,3 +1,4 @@
+// Package migrate provides migration execution logic for supported database dialects.
 package migrate
 
 import (
@@ -13,6 +14,7 @@ type Migrator struct {
 	Dialect dialect.Dialect
 }
 
+// NewMigrator creates a new Migrator for the given dialect and connection.
 func NewMigrator(d dialect.Dialect, c dialect.Conn) *Migrator { return &Migrator{Conn: c, Dialect: d} }
 
 // Status returns applied version set.

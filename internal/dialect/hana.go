@@ -9,12 +9,14 @@ import (
 // HanaDialect implements Dialect for SAP HANA.
 type HanaDialect struct{}
 
+// Name returns the name of the dialect ("hana").
 func (h HanaDialect) Name() string { return "hana" }
 
 func init() { Register(HanaDialect{}) }
 
 const hanaMigrationsTable = "SCIMA_SCHEMA_MIGRATIONS" // uppercase by convention in HANA
 
+// EnsureMigrationTable creates the migration tracking table if it does not exist.
 func (h HanaDialect) EnsureMigrationTable(ctx context.Context, c Conn) error {
 	// Try create table if not exists. HANA before 2.0 lacks standard IF NOT EXISTS for some DDL; we attempt and ignore errors.
 	create := fmt.Sprintf("CREATE TABLE %s (version BIGINT PRIMARY KEY)", hanaMigrationsTable)
@@ -67,6 +69,7 @@ func stringIndexFold(hay, needle string) int {
 	return -1
 }
 
+// SelectAppliedVersions returns a map of applied migration versions from the tracking table.
 func (h HanaDialect) SelectAppliedVersions(ctx context.Context, c Conn) (map[int64]bool, error) {
 	rows, err := c.QueryContext(ctx, fmt.Sprintf("SELECT version FROM %s", hanaMigrationsTable))
 	if err != nil {
@@ -95,11 +98,13 @@ func (h HanaDialect) SelectAppliedVersions(ctx context.Context, c Conn) (map[int
 	return applied, nil
 }
 
+// InsertVersion inserts a migration version into the HANA migrations table.
 func (h HanaDialect) InsertVersion(ctx context.Context, c Conn, version int64) error {
 	_, err := c.ExecContext(ctx, fmt.Sprintf("INSERT INTO %s (version) VALUES (?)", hanaMigrationsTable), version)
 	return err
 }
 
+// DeleteVersion deletes a migration version from the HANA migrations table.
 func (h HanaDialect) DeleteVersion(ctx context.Context, c Conn, version int64) error {
 	_, err := c.ExecContext(ctx, fmt.Sprintf("DELETE FROM %s WHERE version = ?", hanaMigrationsTable), version)
 	return err

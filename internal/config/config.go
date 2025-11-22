@@ -1,3 +1,4 @@
+// Package config holds runtime configuration for migrations.
 package config
 
 // Config holds runtime configuration for migrations.

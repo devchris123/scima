@@ -1,3 +1,4 @@
+// Package dialect provides database dialect interfaces and helpers for migration operations.
 package dialect
 
 import (
@@ -13,10 +14,12 @@ type Conn interface {
 	QueryContext(ctx context.Context, query string, args ...any) (Rows, error)
 }
 
+// Result abstracts the result of a database operation.
 type Result interface {
 	RowsAffected() (int64, error)
 }
 
+// Rows abstracts the result set of a database query.
 type Rows interface {
 	Next() bool
 	Scan(dest ...any) error
