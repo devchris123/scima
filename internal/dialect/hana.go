@@ -3,6 +3,7 @@ package dialect
 import (
 	"context"
 	"fmt"
+	"os"
 )
 
 // HanaDialect implements Dialect for SAP HANA.
@@ -26,7 +27,9 @@ func (h HanaDialect) EnsureMigrationTable(ctx context.Context, c Conn) error {
 			if qerr != nil {
 				return fmt.Errorf("ensure migrations table failed: %v createErr: %v", qerr, err)
 			}
-			rows.Close()
+			if cerr := rows.Close(); cerr != nil {
+				return fmt.Errorf("error closing rows: %v", cerr)
+			}
 		}
 	}
 	return nil
@@ -41,12 +44,12 @@ func stringIndexFold(hay, needle string) int {
 	nLower := []rune(needle)
 	for i := range hLower {
 		if hLower[i] >= 'A' && hLower[i] <= 'Z' {
-			hLower[i] = hLower[i] + ('a' - 'A')
+			hLower[i] += ('a' - 'A')
 		}
 	}
 	for i := range nLower {
 		if nLower[i] >= 'A' && nLower[i] <= 'Z' {
-			nLower[i] = nLower[i] + ('a' - 'A')
+			nLower[i] += ('a' - 'A')
 		}
 	}
 	for i := 0; i+len(nLower) <= len(hLower); i++ {
@@ -73,7 +76,11 @@ func (h HanaDialect) SelectAppliedVersions(ctx context.Context, c Conn) (map[int
 		}
 		return map[int64]bool{}, nil
 	}
-	defer rows.Close()
+	defer func() {
+		if cerr := rows.Close(); cerr != nil {
+			fmt.Fprintf(os.Stderr, "error closing db: %v\n", err)
+		}
+	}()
 	applied := map[int64]bool{}
 	for rows.Next() {
 		var v int64

@@ -3,6 +3,7 @@ package dialect
 import (
 	"context"
 	"fmt"
+	"os"
 )
 
 // PostgresDialect implements Dialect for PostgreSQL.
@@ -23,7 +24,11 @@ func (p PostgresDialect) SelectAppliedVersions(ctx context.Context, c Conn) (map
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		if cerr := rows.Close(); cerr != nil {
+			fmt.Fprintf(os.Stderr, "warning: error closing rows: %v\n", cerr)
+		}
+	}()
 	res := map[int64]bool{}
 	for rows.Next() {
 		var v int64
