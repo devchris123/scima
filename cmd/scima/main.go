@@ -1,3 +1,4 @@
+// Package main provides the CLI for scima schema migrations.
 package main
 
 import (
@@ -42,7 +43,11 @@ var initCmd = &cobra.Command{Use: "init", Short: "Initialize migration tracking 
 	if err != nil {
 		return err
 	}
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Fprintf(os.Stderr, "error closing db: %v\n", err)
+		}
+	}()
 	if err := migr.Dialect.EnsureMigrationTable(context.Background(), migr.Conn); err != nil {
 		return err
 	}
@@ -56,7 +61,11 @@ var statusCmd = &cobra.Command{Use: "status", Short: "Show current and pending m
 	if err != nil {
 		return err
 	}
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Fprintf(os.Stderr, "error closing db: %v\n", err)
+		}
+	}()
 	pairs, err := migrate.ScanDir(cfg.MigrationsDir)
 	if err != nil {
 		return err
@@ -78,7 +87,11 @@ var upCmd = &cobra.Command{Use: "up", Short: "Apply pending up migrations", RunE
 	if err != nil {
 		return err
 	}
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Fprintf(os.Stderr, "error closing db: %v\n", err)
+		}
+	}()
 	pairs, err := migrate.ScanDir(cfg.MigrationsDir)
 	if err != nil {
 		return err
@@ -106,7 +119,11 @@ var downCmd = &cobra.Command{Use: "down", Short: "Revert migrations (default 1 s
 	if err != nil {
 		return err
 	}
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Fprintf(os.Stderr, "error closing db: %v\n", err)
+		}
+	}()
 	pairs, err := migrate.ScanDir(cfg.MigrationsDir)
 	if err != nil {
 		return err
