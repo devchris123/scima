@@ -42,7 +42,6 @@ func (r mockRows) Next() bool {
 	if r.idx >= len(r.iter) {
 		return false
 	}
-	r.idx++
 	return true
 }
 func (r mockRows) Scan(dest ...any) error {
