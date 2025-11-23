@@ -18,6 +18,7 @@ import (
 var rootCmd = &cobra.Command{Use: "scima", Short: "Schema migrations for multiple databases (HANA first)"}
 
 var driver string
+var configPath string
 var dsn string
 var migrationsDir string
 var schema string // optional schema qualification
@@ -151,7 +152,36 @@ var downCmd = &cobra.Command{Use: "down", Short: "Revert migrations (default 1 s
 }}
 
 func gatherConfig() config.Config {
-	return config.Config{Driver: driver, DSN: dsn, MigrationsDir: migrationsDir}
+	// Try config file first if provided or default locations
+	var cfg *config.Config
+	if configPath != "" {
+		cfg, _ = config.LoadConfig(configPath)
+	} else {
+		// Try default locations
+		for _, path := range []string{"./scima.yaml", "./scima.yml", "./scima.json", "./scima.toml"} {
+			cfg, _ = config.LoadConfig(path)
+			if cfg != nil {
+				break
+			}
+		}
+		if cfg == nil {
+			cfg = &config.Config{}
+		}
+	}
+	// CLI flags override config file
+	if driver != "" {
+		cfg.Driver = driver
+	}
+	if dsn != "" {
+		cfg.DSN = dsn
+	}
+	if migrationsDir != "" {
+		cfg.MigrationsDir = migrationsDir
+	}
+	if schema != "" {
+		cfg.Schema = schema
+	}
+	return *cfg
 }
 
 func buildMigrator(cfg config.Config) (*migrate.Migrator, *sql.DB, error) {
