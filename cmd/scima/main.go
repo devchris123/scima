@@ -26,7 +26,7 @@ func addGlobalFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVar(&driver, "driver", "hana", "Database driver/dialect (hana, pg, mysql, sqlite, etc.)")
 	cmd.PersistentFlags().StringVar(&dsn, "dsn", "", "Database DSN / connection string")
 	cmd.PersistentFlags().StringVar(&migrationsDir, "migrations-dir", "./migrations", "Directory containing migration files")
-	cmd.PersistentFlags().StringVar(&schema, "schema", "", "Optional database schema for migration tracking table")
+	cmd.PersistentFlags().StringVar(&schema, "schema", "", "Optional database schema for migration tracking table and SQL placeholders ({{schema}}, {{schema?}})")
 }
 
 func init() {

@@ -30,6 +30,47 @@ Create paired files for each version:
 0010_create_users_table.down.sql
 ```
 
+### Schema placeholders
+
+You can write portable migrations using schema placeholders that are substituted at runtime:
+
+| Placeholder     | Description |
+|-----------------|-------------|
+| `{{schema}}`    | Required schema name (error if `--schema` not provided) |
+| `{{schema?}}`   | Optional schema prefix: becomes `schema.` when provided, otherwise empty |
+| `\\{{schema}}`, `\\{{schema?}}` | Escape sequence: leaves token literal (no substitution) |
+
+Examples:
+
+```sql
+-- Uses required schema placeholder
+CREATE TABLE {{schema}}.users (
+	id BIGSERIAL PRIMARY KEY,
+	username VARCHAR(255) NOT NULL
+);
+
+-- Optional: will create table in default schema if none supplied
+CREATE TABLE {{schema?}}audit_log (
+	id BIGSERIAL PRIMARY KEY,
+	event TEXT NOT NULL
+);
+
+-- Escaped tokens remain untouched
+-- This will literally create table named {{schema}}.raw_data (assuming dialect allows curly braces)
+CREATE TABLE \{{schema}}.raw_data(id INT);
+-- Optional escaped
+CREATE TABLE \{{schema?}}metrics(id INT);
+```
+
+Run with a schema:
+
+```bash
+scima up --driver postgres --dsn "$PG_DSN" --schema tenant_a --migrations-dir ./migrations
+```
+
+If `{{schema}}` appears and `--schema` is omitted, the command errors.
+
+
 ## Future roadmap
 ### Near-term enhancements
 - Dialect-specific migrations: for portability you can keep separate directories (e.g. `migrations_pg/`) when syntax differs (Postgres vs HANA column add syntax). The CLI currently points to one directory; run with `--migrations-dir` per dialect.
