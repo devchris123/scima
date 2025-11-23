@@ -36,7 +36,7 @@ func TestPostgresMigrationsIntegration(t *testing.T) {
 	// ---------------------------------------------------------------------
 	ctx := context.Background()
 
-	rootDir := "/Users/I758791/github.com/scima"
+	rootDir := getenvDefault("SCIMA_TEST_ROOT_DIR", "/Users/I758791/github.com/scima")
 	migDir := filepath.Join(rootDir, "tests", "integration", "postgres", "migrations")
 	if _, err := os.Stat(migDir); os.IsNotExist(err) {
 		t.Fatalf("migrations folder not found: %s", migDir)
