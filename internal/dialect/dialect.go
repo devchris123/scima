@@ -6,6 +6,10 @@ import (
 	"fmt"
 )
 
+const (
+	migrationTable = "SCIMA_SCHEMA_MIGRATIONS"
+)
+
 // Conn abstracts minimal operations needed for migration execution.
 // Each dialect can wrap a DB connection or tx.
 // Exec should execute statements separated already (no multi-statement parsing here).
@@ -30,10 +34,10 @@ type Rows interface {
 // Dialect binds SQL variants and introspection / DDL helpers.
 type Dialect interface {
 	Name() string
-	EnsureMigrationTable(ctx context.Context, c Conn) error
-	SelectAppliedVersions(ctx context.Context, c Conn) (map[int64]bool, error)
-	InsertVersion(ctx context.Context, c Conn, version int64) error
-	DeleteVersion(ctx context.Context, c Conn, version int64) error
+	EnsureMigrationTable(ctx context.Context, c Conn, schema string) error
+	SelectAppliedVersions(ctx context.Context, c Conn, schema string) (map[int64]bool, error)
+	InsertVersion(ctx context.Context, c Conn, schema string, version int64) error
+	DeleteVersion(ctx context.Context, c Conn, schema string, version int64) error
 }
 
 var registry = map[string]Dialect{}
@@ -48,4 +52,11 @@ func Get(name string) (Dialect, error) {
 		return nil, fmt.Errorf("unknown dialect: %s", name)
 	}
 	return d, nil
+}
+
+func qualifiedMigrationTable(schema string) string {
+	if schema == "" {
+		return migrationTable
+	}
+	return fmt.Sprintf("\"%s\".%s", schema, migrationTable)
 }

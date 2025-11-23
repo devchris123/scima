@@ -87,6 +87,11 @@ func TestPostgresMigrationsIntegration(t *testing.T) {
 	if err := db.PingContext(ctx); err != nil {
 		t.Fatalf("ping: %v", err)
 	}
+	// Setup test schema
+	_, err = db.ExecContext(ctx, `CREATE SCHEMA IF NOT EXISTS test_schema`)
+	if err != nil {
+		t.Fatalf("create schema: %v", err)
+	}
 
 	// ---------------------------------------------------------------------
 	// MIGRATOR: Acquire dialect and create migrator wrapper
@@ -95,7 +100,7 @@ func TestPostgresMigrationsIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("get dialect: %v", err)
 	}
-	migr := migrate.NewMigrator(d, dialect.SQLConn{DB: db})
+	migr := migrate.NewMigrator(d, dialect.SQLConn{DB: db}, "test_schema")
 
 	// ---------------------------------------------------------------------
 	// DISCOVERY: Locate migrations directory and parse & validate files

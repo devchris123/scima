@@ -12,18 +12,18 @@ type PostgresDialect struct{}
 // Name returns the name of the dialect ("postgres").
 func (p PostgresDialect) Name() string { return "postgres" }
 
-const pgMigrationsTable = "schema_migrations"
-
 // EnsureMigrationTable creates the migration tracking table if it does not exist.
-func (p PostgresDialect) EnsureMigrationTable(ctx context.Context, c Conn) error {
-	stmt := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (version BIGINT PRIMARY KEY)", pgMigrationsTable)
+func (p PostgresDialect) EnsureMigrationTable(ctx context.Context, c Conn, schema string) error {
+	table := qualifiedMigrationTable(schema)
+	stmt := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (version BIGINT PRIMARY KEY)", table)
 	_, err := c.ExecContext(ctx, stmt)
 	return err
 }
 
 // SelectAppliedVersions returns a map of applied migration versions from the tracking table.
-func (p PostgresDialect) SelectAppliedVersions(ctx context.Context, c Conn) (map[int64]bool, error) {
-	rows, err := c.QueryContext(ctx, fmt.Sprintf("SELECT version FROM %s", pgMigrationsTable))
+func (p PostgresDialect) SelectAppliedVersions(ctx context.Context, c Conn, schema string) (map[int64]bool, error) {
+	table := qualifiedMigrationTable(schema)
+	rows, err := c.QueryContext(ctx, fmt.Sprintf("SELECT version FROM %s", table))
 	if err != nil {
 		return nil, err
 	}
@@ -47,14 +47,16 @@ func (p PostgresDialect) SelectAppliedVersions(ctx context.Context, c Conn) (map
 }
 
 // InsertVersion inserts a migration version into the Postgres migrations table.
-func (p PostgresDialect) InsertVersion(ctx context.Context, c Conn, version int64) error {
-	_, err := c.ExecContext(ctx, fmt.Sprintf("INSERT INTO %s (version) VALUES ($1)", pgMigrationsTable), version)
+func (p PostgresDialect) InsertVersion(ctx context.Context, c Conn, schema string, version int64) error {
+	table := qualifiedMigrationTable(schema)
+	_, err := c.ExecContext(ctx, fmt.Sprintf("INSERT INTO %s (version) VALUES ($1)", table), version)
 	return err
 }
 
 // DeleteVersion deletes a migration version from the Postgres migrations table.
-func (p PostgresDialect) DeleteVersion(ctx context.Context, c Conn, version int64) error {
-	_, err := c.ExecContext(ctx, fmt.Sprintf("DELETE FROM %s WHERE version = $1", pgMigrationsTable), version)
+func (p PostgresDialect) DeleteVersion(ctx context.Context, c Conn, schema string, version int64) error {
+	table := qualifiedMigrationTable(schema)
+	_, err := c.ExecContext(ctx, fmt.Sprintf("DELETE FROM %s WHERE version = $1", table), version)
 	return err
 }
 
