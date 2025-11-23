@@ -60,23 +60,25 @@ func (r mockRows) Err() error   { return nil }
 
 type mockDialect struct{ versions map[int64]bool }
 
-func (d mockDialect) Name() string                                                 { return "mock" }
-func (d mockDialect) EnsureMigrationTable(_ context.Context, _ dialect.Conn) error { return nil }
-func (d mockDialect) SelectAppliedVersions(_ context.Context, _ dialect.Conn) (map[int64]bool, error) {
+func (d mockDialect) Name() string { return "mock" }
+func (d mockDialect) EnsureMigrationTable(_ context.Context, _ dialect.Conn, _ string) error {
+	return nil
+}
+func (d mockDialect) SelectAppliedVersions(_ context.Context, _ dialect.Conn, _ string) (map[int64]bool, error) {
 	return d.versions, nil
 }
-func (d mockDialect) InsertVersion(_ context.Context, _ dialect.Conn, version int64) error {
+func (d mockDialect) InsertVersion(_ context.Context, _ dialect.Conn, _ string, version int64) error {
 	d.versions[version] = true
 	return nil
 }
-func (d mockDialect) DeleteVersion(_ context.Context, _ dialect.Conn, version int64) error {
+func (d mockDialect) DeleteVersion(_ context.Context, _ dialect.Conn, _ string, version int64) error {
 	delete(d.versions, version)
 	return nil
 }
 
 func TestMigratorApplyUpDown(t *testing.T) {
 	versions := map[int64]bool{10: true}
-	migr := NewMigrator(mockDialect{versions: versions}, &mockConn{Versions: versions})
+	migr := NewMigrator(mockDialect{versions: versions}, &mockConn{Versions: versions}, "")
 	ups := []MigrationFile{{Version: 20, Name: "add_col", Direction: "up", SQL: "ALTER"}}
 	if err := migr.ApplyUp(context.Background(), ups); err != nil {
 		t.Fatalf("apply up: %v", err)

@@ -20,11 +20,13 @@ var rootCmd = &cobra.Command{Use: "scima", Short: "Schema migrations for multipl
 var driver string
 var dsn string
 var migrationsDir string
+var schema string // optional schema qualification
 
 func addGlobalFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVar(&driver, "driver", "hana", "Database driver/dialect (hana, pg, mysql, sqlite, etc.)")
 	cmd.PersistentFlags().StringVar(&dsn, "dsn", "", "Database DSN / connection string")
 	cmd.PersistentFlags().StringVar(&migrationsDir, "migrations-dir", "./migrations", "Directory containing migration files")
+	cmd.PersistentFlags().StringVar(&schema, "schema", "", "Optional database schema for migration tracking table")
 }
 
 func init() {
@@ -48,7 +50,7 @@ var initCmd = &cobra.Command{Use: "init", Short: "Initialize migration tracking 
 			fmt.Fprintf(os.Stderr, "error closing db: %v\n", err)
 		}
 	}()
-	if err := migr.Dialect.EnsureMigrationTable(context.Background(), migr.Conn); err != nil {
+	if err := migr.EnsureMigrationTable(context.Background()); err != nil {
 		return err
 	}
 	fmt.Println("migration table ensured")
@@ -164,7 +166,7 @@ func buildMigrator(cfg config.Config) (*migrate.Migrator, *sql.DB, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	return migrate.NewMigrator(dial, dialect.SQLConn{DB: db}), db, nil
+	return migrate.NewMigrator(dial, dialect.SQLConn{DB: db}, schema), db, nil
 }
 
 func driverNameFor(driver string) string {
