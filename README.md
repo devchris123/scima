@@ -18,22 +18,17 @@ scima up --driver hana --dsn "hdb://user:pass@host:30015" --migrations-dir ./mig
 scima status --driver hana --dsn "hdb://user:pass@host:30015" --migrations-dir ./migrations
 
 # Postgres example
-scima init --driver postgres --dsn "postgres://user:pass@localhost:5432/mydb?sslmode=disable" --migrations-dir ./migrations
 scima up --driver postgres --dsn "postgres://user:pass@localhost:5432/mydb?sslmode=disable" --migrations-dir ./migrations
 scima status --driver postgres --dsn "postgres://user:pass@localhost:5432/mydb?sslmode=disable" --migrations-dir ./migrations
 ```
 
 ## Migration files
-Create paired files for each version:
 ```
 0010_create_users_table.up.sql
 0010_create_users_table.down.sql
 ```
 
-### Schema placeholders
-
 You can write portable migrations using schema placeholders that are substituted at runtime:
-
 | Placeholder     | Description |
 |-----------------|-------------|
 | `{{schema}}`    | Required schema name (error if `--schema` not provided) |
@@ -43,6 +38,21 @@ You can write portable migrations using schema placeholders that are substituted
 Examples:
 
 ```sql
+
+
+## How schema is used
+
+The `--schema` flag serves two purposes:
+
+1. **Migration tracking table**: The schema is used to qualify the migration bookkeeping table (e.g., `schema_migrations` becomes `<schema>.schema_migrations`).
+2. **SQL placeholders**: Any migration SQL file containing the placeholders `{{schema}}` or `{{schema?}}` will have these tokens replaced with the provided schema value (or omitted if not set and using the optional form).
+
+This allows you to:
+- Track migrations in a schema-specific table
+- Write portable migration SQL that adapts to different schemas without duplicating files
+
+**Escaping placeholders:**
+To prevent substitution and keep the literal token in your SQL, prefix the placeholder with a single backslash (e.g., `\{{schema}}`). This is a literal backslash in your SQL file, not Go string escaping.
 -- Uses required schema placeholder
 CREATE TABLE {{schema}}.users (
 	id BIGSERIAL PRIMARY KEY,
