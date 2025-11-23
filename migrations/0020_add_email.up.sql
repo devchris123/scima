@@ -1,1 +1,0 @@
-ALTER TABLE users ADD (email NVARCHAR(320));
