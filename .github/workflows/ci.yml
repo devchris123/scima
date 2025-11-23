@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - name: Run linter
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.6
+      - name: Run go vet
+        run: go vet ./...
+      - name: Install staticcheck
+        run: go install honnef.co/go/tools/cmd/staticcheck@v0.6.1
+      - name: Run staticcheck
+        run: staticcheck ./...
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - name: Verify go modules
+        run: |
+          go mod tidy
+          go mod verify
+      - name: Build binaries
+        run: go build -v ./...
+      - name: Run unit tests with coverage
+        run: go test -v -coverprofile=coverage.out ./...
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.out
+
+  integration-test:
+    runs-on: ubuntu-latest
+    env:
+      SCIMA_TEST_ROOT_DIR: ${{ github.workspace }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - name: Verify go modules
+        run: |
+          go mod tidy
+          go mod verify
+      - name: Build binaries
+        run: go build -v ./...
+      - name: Run integration tests
+        run: go test -v --tags=integration ./tests/integration/...
