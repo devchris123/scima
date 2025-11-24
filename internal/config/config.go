@@ -7,10 +7,18 @@ import (
 
 // Config holds runtime configuration for migrations.
 type Config struct {
-	Driver        string `mapstructure:"driver"`
-	DSN           string `mapstructure:"dsn"`
-	MigrationsDir string `mapstructure:"migrationsdir"`
-	Schema        string `mapstructure:"schema"`
+	Driver        string   `mapstructure:"driver"`
+	DSN           string   `mapstructure:"dsn"`
+	MigrationsDir string   `mapstructure:"migrationsdir"`
+	Schema        string   `mapstructure:"schema"`
+	Tenants       []Tenant `mapstructure:"tenants"`
+}
+
+// Tenant holds configuration for a single tenant.
+type Tenant struct {
+	Name   string `mapstructure:"name"`
+	DSN    string `mapstructure:"dsn"`
+	Schema string `mapstructure:"schema"`
 }
 
 // LoadConfig uses Viper to load config from file, env, and flags.

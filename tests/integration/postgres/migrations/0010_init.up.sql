@@ -1,4 +1,4 @@
-CREATE TABLE users (
+CREATE TABLE {{schema}}users (
     id BIGSERIAL PRIMARY KEY,
     username VARCHAR(255) NOT NULL,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP

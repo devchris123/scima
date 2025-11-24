@@ -5,6 +5,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
 	"github.com/scima/scima/internal/config"
@@ -147,5 +149,13 @@ func driverNameFor(driver string) string {
 		return "postgres"
 	default:
 		return driver // assume same
+	}
+}
+
+func closeDb(db io.Closer) {
+	if db != nil {
+		if err := db.Close(); err != nil {
+			fmt.Fprintf(os.Stderr, "error closing db: %v\n", err)
+		}
 	}
 }

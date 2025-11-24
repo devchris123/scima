@@ -1,1 +1,1 @@
-ALTER TABLE users DROP COLUMN email;
+ALTER TABLE {{schema}}users DROP COLUMN email;
