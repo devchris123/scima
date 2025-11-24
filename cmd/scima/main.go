@@ -3,14 +3,12 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"os"
 	"time"
 
 	_ "github.com/lib/pq" // postgres driver
 	"github.com/scima/scima/internal/config"
-	"github.com/scima/scima/internal/dialect"
 	"github.com/scima/scima/internal/migrate"
 	"github.com/spf13/cobra"
 )
@@ -42,7 +40,7 @@ func init() {
 
 var initCmd = &cobra.Command{Use: "init", Short: "Initialize migration tracking table", RunE: func(_ *cobra.Command, _ []string) error {
 	cfg := gatherConfig()
-	migr, db, err := buildMigrator(cfg)
+	migr, db, err := migrate.BuildMigrator(cfg)
 	if err != nil {
 		return err
 	}
@@ -60,7 +58,7 @@ var initCmd = &cobra.Command{Use: "init", Short: "Initialize migration tracking 
 
 var statusCmd = &cobra.Command{Use: "status", Short: "Show current and pending migrations", RunE: func(_ *cobra.Command, _ []string) error {
 	cfg := gatherConfig()
-	migr, db, err := buildMigrator(cfg)
+	migr, db, err := migrate.BuildMigrator(cfg)
 	if err != nil {
 		return err
 	}
@@ -86,7 +84,7 @@ var statusCmd = &cobra.Command{Use: "status", Short: "Show current and pending m
 
 var upCmd = &cobra.Command{Use: "up", Short: "Apply pending up migrations", RunE: func(_ *cobra.Command, _ []string) error {
 	cfg := gatherConfig()
-	migr, db, err := buildMigrator(cfg)
+	migr, db, err := migrate.BuildMigrator(cfg)
 	if err != nil {
 		return err
 	}
@@ -118,7 +116,7 @@ var upCmd = &cobra.Command{Use: "up", Short: "Apply pending up migrations", RunE
 var steps int
 var downCmd = &cobra.Command{Use: "down", Short: "Revert migrations (default 1 step)", RunE: func(_ *cobra.Command, _ []string) error {
 	cfg := gatherConfig()
-	migr, db, err := buildMigrator(cfg)
+	migr, db, err := migrate.BuildMigrator(cfg)
 	if err != nil {
 		return err
 	}
@@ -182,32 +180,6 @@ func gatherConfig() config.Config {
 		cfg.Schema = schema
 	}
 	return *cfg
-}
-
-func buildMigrator(cfg config.Config) (*migrate.Migrator, *sql.DB, error) {
-	dial, err := dialect.Get(cfg.Driver)
-	if err != nil {
-		return nil, nil, err
-	}
-	if cfg.DSN == "" {
-		return nil, nil, fmt.Errorf("dsn required")
-	}
-	db, err := sql.Open(driverNameFor(cfg.Driver), cfg.DSN)
-	if err != nil {
-		return nil, nil, err
-	}
-	return migrate.NewMigrator(dial, dialect.SQLConn{DB: db}, schema), db, nil
-}
-
-func driverNameFor(driver string) string {
-	switch driver {
-	case "hana":
-		return "hdb"
-	case "postgres", "pg":
-		return "postgres"
-	default:
-		return driver // assume same
-	}
 }
 
 func main() {
