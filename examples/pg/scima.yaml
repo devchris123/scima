@@ -1,0 +1,12 @@
+driver: postgres
+dsn: postgres://user:pass@localhost:5432/testdb?sslmode=disable
+schema: public
+migrationsdir: ./examples/pg/migrations
+
+tenants:
+  - name: tenant1
+    dsn: postgres://user:pass@localhost:5432/testdb?sslmode=disable
+    schema: tenant1
+  - name: tenant2
+    dsn: postgres://user:pass@localhost:5432/testdb?sslmode=disable
+    schema: tenant2

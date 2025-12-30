@@ -1,0 +1,1 @@
+ALTER TABLE {{schema}}users DROP COLUMN email;

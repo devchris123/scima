@@ -1,0 +1,1 @@
+ALTER TABLE {{schema}}users ADD COLUMN email VARCHAR(320);
