@@ -110,6 +110,7 @@ func expandPlaceholders(sql string, schema string) (string, error) {
 				return "", fmt.Errorf("%s used but schema not set", requiredSchemaToken)
 			}
 			b.WriteString(schema)
+			b.WriteByte('.')
 			i += len(req)
 			continue
 		}

@@ -5,7 +5,7 @@ import (
 )
 
 func TestExpandPlaceholdersRequired(t *testing.T) {
-	in := "CREATE TABLE {{schema}}.users(id INT);"
+	in := "CREATE TABLE {{schema}}users(id INT);"
 	out, err := expandPlaceholders(in, "tenant1")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -38,14 +38,14 @@ func TestExpandPlaceholdersOptionalNoSchema(t *testing.T) {
 }
 
 func TestExpandPlaceholdersRequiredMissingSchema(t *testing.T) {
-	in := "CREATE TABLE {{schema}}.users(id INT);"
+	in := "CREATE TABLE {{schema}}users(id INT);"
 	if _, err := expandPlaceholders(in, ""); err == nil {
 		t.Fatalf("expected error when schema empty with required placeholder")
 	}
 }
 
 func TestExpandPlaceholdersMultiple(t *testing.T) {
-	in := "INSERT INTO {{schema}}.a SELECT * FROM {{schema}}.b;"
+	in := "INSERT INTO {{schema}}a SELECT * FROM {{schema}}b;"
 	out, err := expandPlaceholders(in, "tenant1")
 	if err != nil {
 		t.Fatalf("unexpected: %v", err)
