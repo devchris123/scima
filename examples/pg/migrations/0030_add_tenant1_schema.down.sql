@@ -1,0 +1,1 @@
+DROP SCHEMA tenant1 CASCADE;

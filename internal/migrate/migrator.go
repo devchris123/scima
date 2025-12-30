@@ -3,9 +3,13 @@ package migrate
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
+	"github.com/scima/scima/internal/config"
 	"github.com/scima/scima/internal/dialect"
 )
 
@@ -110,6 +114,7 @@ func expandPlaceholders(sql string, schema string) (string, error) {
 				return "", fmt.Errorf("%s used but schema not set", requiredSchemaToken)
 			}
 			b.WriteString(schema)
+			b.WriteByte('.')
 			i += len(req)
 			continue
 		}
@@ -118,4 +123,39 @@ func expandPlaceholders(sql string, schema string) (string, error) {
 		i++
 	}
 	return b.String(), nil
+}
+
+// BuildMigrator constructs a Migrator and underlying sql.DB from config.
+func BuildMigrator(cfg config.Config) (*Migrator, *sql.DB, error) {
+	dial, err := dialect.Get(cfg.Driver)
+	if err != nil {
+		return nil, nil, err
+	}
+	if cfg.DSN == "" {
+		return nil, nil, fmt.Errorf("dsn required")
+	}
+	db, err := sql.Open(driverNameFor(cfg.Driver), cfg.DSN)
+	if err != nil {
+		return nil, nil, err
+	}
+	return NewMigrator(dial, dialect.SQLConn{DB: db}, cfg.Schema), db, nil
+}
+
+func driverNameFor(driver string) string {
+	switch driver {
+	case "hana":
+		return "hdb"
+	case "postgres", "pg":
+		return "postgres"
+	default:
+		return driver // assume same
+	}
+}
+
+func closeDb(db io.Closer) {
+	if db != nil {
+		if err := db.Close(); err != nil {
+			fmt.Fprintf(os.Stderr, "error closing db: %v\n", err)
+		}
+	}
 }

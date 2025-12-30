@@ -77,15 +77,20 @@ func (d mockDialect) DeleteVersion(_ context.Context, _ dialect.Conn, _ string, 
 }
 
 func TestMigratorApplyUpDown(t *testing.T) {
+	// Setup
 	versions := map[int64]bool{10: true}
 	migr := NewMigrator(mockDialect{versions: versions}, &mockConn{Versions: versions}, "")
 	ups := []MigrationFile{{Version: 20, Name: "add_col", Direction: "up", SQL: "ALTER"}}
+
+	// Test ApplyUp
 	if err := migr.ApplyUp(context.Background(), ups); err != nil {
 		t.Fatalf("apply up: %v", err)
 	}
 	if !versions[20] {
 		t.Fatalf("version 20 not inserted")
 	}
+
+	// Test ApplyDown
 	downs := []MigrationFile{{Version: 20, Name: "add_col", Direction: "down", SQL: "ALTER"}}
 	if err := migr.ApplyDown(context.Background(), downs); err != nil {
 		t.Fatalf("apply down: %v", err)

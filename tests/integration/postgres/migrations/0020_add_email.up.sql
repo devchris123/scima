@@ -1,1 +1,1 @@
-ALTER TABLE users ADD COLUMN email VARCHAR(320);
+ALTER TABLE {{schema}}users ADD COLUMN email VARCHAR(320);
