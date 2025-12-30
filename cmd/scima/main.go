@@ -26,6 +26,7 @@ func addGlobalFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVar(&dsn, "dsn", "", "Database DSN / connection string")
 	cmd.PersistentFlags().StringVar(&migrationsDir, "migrations-dir", "./migrations", "Directory containing migration files")
 	cmd.PersistentFlags().StringVar(&schema, "schema", "", "Optional database schema for migration tracking table and SQL placeholders ({{schema}}, {{schema?}})")
+	cmd.PersistentFlags().StringVar(&configPath, "config", "", "Path to config file")
 }
 
 func init() {
@@ -38,8 +39,8 @@ func init() {
 	downCmd.Flags().IntVar(&steps, "steps", 1, "Number of migration steps to revert (default 1, 0=all)")
 }
 
-var initCmd = &cobra.Command{Use: "init", Short: "Initialize migration tracking table", RunE: func(_ *cobra.Command, _ []string) error {
-	cfg := gatherConfig()
+var initCmd = &cobra.Command{Use: "init", Short: "Initialize migration tracking table", RunE: func(cmd *cobra.Command, _ []string) error {
+	cfg := gatherConfig(cmd)
 	migr, db, err := migrate.BuildMigrator(cfg)
 	if err != nil {
 		return err
@@ -56,8 +57,8 @@ var initCmd = &cobra.Command{Use: "init", Short: "Initialize migration tracking 
 	return nil
 }}
 
-var statusCmd = &cobra.Command{Use: "status", Short: "Show current and pending migrations", RunE: func(_ *cobra.Command, _ []string) error {
-	cfg := gatherConfig()
+var statusCmd = &cobra.Command{Use: "status", Short: "Show current and pending migrations", RunE: func(cmd *cobra.Command, _ []string) error {
+	cfg := gatherConfig(cmd)
 	migr, db, err := migrate.BuildMigrator(cfg)
 	if err != nil {
 		return err
@@ -82,8 +83,8 @@ var statusCmd = &cobra.Command{Use: "status", Short: "Show current and pending m
 	return nil
 }}
 
-var upCmd = &cobra.Command{Use: "up", Short: "Apply pending up migrations", RunE: func(_ *cobra.Command, _ []string) error {
-	cfg := gatherConfig()
+var upCmd = &cobra.Command{Use: "up", Short: "Apply pending up migrations", RunE: func(cmd *cobra.Command, _ []string) error {
+	cfg := gatherConfig(cmd)
 	migr, db, err := migrate.BuildMigrator(cfg)
 	if err != nil {
 		return err
@@ -114,8 +115,8 @@ var upCmd = &cobra.Command{Use: "up", Short: "Apply pending up migrations", RunE
 }}
 
 var steps int
-var downCmd = &cobra.Command{Use: "down", Short: "Revert migrations (default 1 step)", RunE: func(_ *cobra.Command, _ []string) error {
-	cfg := gatherConfig()
+var downCmd = &cobra.Command{Use: "down", Short: "Revert migrations (default 1 step)", RunE: func(cmd *cobra.Command, _ []string) error {
+	cfg := gatherConfig(cmd)
 	migr, db, err := migrate.BuildMigrator(cfg)
 	if err != nil {
 		return err
@@ -149,7 +150,7 @@ var downCmd = &cobra.Command{Use: "down", Short: "Revert migrations (default 1 s
 	return nil
 }}
 
-func gatherConfig() config.Config {
+func gatherConfig(cmd *cobra.Command) config.Config {
 	// Try config file first if provided or default locations
 	var cfg *config.Config
 	if configPath != "" {
@@ -167,16 +168,16 @@ func gatherConfig() config.Config {
 		}
 	}
 	// CLI flags override config file
-	if driver != "" {
+	if driver != "" && cmd.Flags().Changed("driver") {
 		cfg.Driver = driver
 	}
-	if dsn != "" {
+	if dsn != "" && cmd.Flags().Changed("dsn") {
 		cfg.DSN = dsn
 	}
-	if migrationsDir != "" {
+	if migrationsDir != "" && cmd.Flags().Changed("migrations-dir") {
 		cfg.MigrationsDir = migrationsDir
 	}
-	if schema != "" {
+	if schema != "" && cmd.Flags().Changed("schema") {
 		cfg.Schema = schema
 	}
 	return *cfg

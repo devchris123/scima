@@ -20,8 +20,8 @@ var tenantsCmd = &cobra.Command{
 var tenantsUpCmd = &cobra.Command{
 	Use:   "up",
 	Short: "Apply pending up migrations for all tenants",
-	RunE: func(_ *cobra.Command, _ []string) error {
-		cfg := gatherConfig()
+	RunE: func(cmd *cobra.Command, _ []string) error {
+		cfg := gatherConfig(cmd)
 		if len(cfg.Tenants) == 0 {
 			return fmt.Errorf("no tenants configured")
 		}
